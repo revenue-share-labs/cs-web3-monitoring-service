@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum TransactionStatus {
+  PENDING  @map("PENDING")
+  MINED    @map("MINED")
+  FAILED   @map("FAILED")
+  CANCELED @map("CANCELED")
+}
+
+type Factory {
+  type    String
+  version String
+  abi     String
+}
+
+type TransactionLog {
+  data   String
+  topics String[]
+}
+
+model Transaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  hash      String            @unique
+  factory   Factory
+  timestamp Int
+  status    TransactionStatus
+  value     BigInt
+  data      String
+  logs      TransactionLog[]
+  from      String
+
+  block   Block  @relation(fields: [blockId], references: [id])
+  blockId String @db.ObjectId
+
+  transactionCreateAvroRecord   TransactionCreateAvroRecord @relation(fields: [transactionCreateAvroRecordId], references: [id])
+  transactionCreateAvroRecordId String                      @unique @db.ObjectId
+
+  transactionUpdateAvroRecord   TransactionUpdateAvroRecord? @relation(fields: [transactionUpdateAvroRecordId], references: [id])
+  transactionUpdateAvroRecordId String?                      @unique @db.ObjectId
+
+  @@index([from])
+}
+
+model TransactionUpdateAvroRecord {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  record Bytes
+
+  transaction Transaction?
+}
+
+model TransactionCreateAvroRecord {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  record Bytes
+
+  transaction Transaction?
+}
+
+model Block {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  number       BigInt        @unique
+  timestamp    Int
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+}
+
+enum RelayerTransactionStatus {
+  PENDING   @map("PENDING")
+  SENT      @map("SENT")
+  SUBMITTED @map("SUBMITTED")
+  INMEMPOOL @map("INMEMPOOL")
+  MINED     @map("MINED")
+  CONFIRMED @map("CONFIRMED")
+  FAILED    @map("FAILED")
+}
+
+model RelayerTransaction {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  hash          String                   @unique
+  transactionId String                   @unique
+  status        RelayerTransactionStatus
+
+  relayerTransactionAvroRecords RelayerTransactionAvroRecord[]
+
+  createdAt DateTime
+}
+
+model RelayerTransactionAvroRecord {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  record Bytes
+
+  transaction          RelayerTransaction? @relation(fields: [relayerTransactionId], references: [id])
+  relayerTransactionId String?             @db.ObjectId
+}

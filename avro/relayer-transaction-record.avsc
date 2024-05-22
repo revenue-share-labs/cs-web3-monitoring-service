@@ -1,0 +1,32 @@
+{
+  "type": "record",
+  "name": "RelayerTransaction",
+  "namespace": "rsp.contracts",
+  "version": "1",
+  "fields": [
+    {
+      "name": "hash",
+      "type": "string"
+    },
+    {
+      "name": "transactionId",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "RelayerTransactionStatus",
+        "symbols": [
+          "PENDING",
+          "SENT",
+          "SUBMITTED",
+          "INMEMPOOL",
+          "MINED",
+          "CONFIRMED",
+          "FAILED"
+        ]
+      }
+    }
+  ]
+}
