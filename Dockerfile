@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:18-alpine
 WORKDIR /app
 # Bundle app source
 COPY . .
@@ -9,5 +9,5 @@ RUN npx prisma generate
 RUN npm run build
 
 # Expose port and start application
-EXPOSE 3050
-CMD ["npm", "run", "start:prod"]
+#EXPOSE 3050
+#CMD ["npm", "run", "start:prod"]
